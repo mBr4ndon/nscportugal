@@ -1,0 +1,137 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --petrol: #2C3E50;
+  --petrol-deep: #1C2833;
+  --cream: #FAF7F2;
+  --cream-pure: #FFFFFF;
+  --gold: #B08D57;
+  --gold-light: #C9A878;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--cream);
+  color: var(--petrol);
+  font-feature-settings: "ss01", "ss02", "cv01", "cv11";
+}
+
+/* Selecção de texto em tom sacro */
+::selection {
+  background: var(--petrol);
+  color: var(--cream);
+}
+
+/* Detalhes tipográficos litúrgicos */
+.text-balance {
+  text-wrap: balance;
+}
+
+.text-pretty {
+  text-wrap: pretty;
+}
+
+/* Ornamento divisor */
+.ornament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.ornament::before,
+.ornament::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, currentColor, transparent);
+  opacity: 0.3;
+  max-width: 6rem;
+}
+
+/* Versal — letra capitular */
+.versal::first-letter {
+  font-family: var(--font-cinzel), serif;
+  font-size: 4em;
+  float: left;
+  line-height: 0.85;
+  margin: 0.1em 0.1em 0 0;
+  color: var(--gold);
+  font-weight: 500;
+}
+
+/* Grain overlay */
+.grain-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* Animações de entrada com stagger */
+.stagger > * {
+  opacity: 0;
+  animation: fadeUp 0.8s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+.stagger > *:nth-child(1) { animation-delay: 0.1s; }
+.stagger > *:nth-child(2) { animation-delay: 0.25s; }
+.stagger > *:nth-child(3) { animation-delay: 0.4s; }
+.stagger > *:nth-child(4) { animation-delay: 0.55s; }
+.stagger > *:nth-child(5) { animation-delay: 0.7s; }
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scrollbar discreta */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cream);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--petrol);
+  border-radius: 4px;
+}
+
+/* Botão primário — classe utilitária */
+.btn-primary {
+  @apply inline-flex items-center justify-center px-8 py-4 bg-petrol text-cream-50 font-display tracking-wider text-sm uppercase transition-all duration-300 hover:bg-petrol-700 hover:tracking-widest;
+}
+
+.btn-ghost {
+  @apply inline-flex items-center justify-center px-8 py-4 border border-petrol/30 text-petrol font-display tracking-wider text-sm uppercase transition-all duration-300 hover:border-petrol hover:bg-petrol hover:text-cream-50;
+}
+
+/* Input — estilo litúrgico */
+.input-sacred {
+  @apply w-full px-0 py-3 bg-transparent border-0 border-b border-petrol/20 text-petrol placeholder:text-petrol/40 focus:outline-none focus:border-petrol transition-colors duration-300 font-serif text-lg;
+}
+
+.label-sacred {
+  @apply block text-xs font-display tracking-[0.2em] uppercase text-petrol/60 mb-2;
+}
