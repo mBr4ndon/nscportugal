@@ -20,9 +20,19 @@ export interface CalculoInscricao {
   limiteFamiliaCentimos: number | null;
   descontoFamiliaCentimos: number;
   baseCentimos: number;
+  tipoDescontoPromocional: "percentage" | "fixed" | null;
+  valorDescontoPromocional: number;
+  descontoPromocionalCentimos: number;
   extrasCentimos: number;
+  totalSemDonativoCentimos: number;
+  donativoCentimos: number;
   totalCentimos: number;
   rota: "adultos" | "familias";
+}
+
+export interface DescontoPromocional {
+  type: "percentage" | "fixed";
+  value: number;
 }
 
 export function calcularIdade(dataNascimento: string, referencia = new Date()): number {
@@ -44,7 +54,28 @@ function calcularExtras(servicos: ServicosData): number {
   return Object.values(servicos).filter(Boolean).length * PRECO_SERVICO_CENTIMOS;
 }
 
-export function calcularInscricao(data: InscricaoData, referencia = new Date()): CalculoInscricao {
+function calcularDonativo(
+  opcao: InscricaoData["donativo"],
+  totalSemDonativoCentimos: number,
+  valorCustomEuros?: number,
+): number {
+  if (opcao === "round_up") {
+    return (100 - totalSemDonativoCentimos % 100) % 100;
+  }
+  if (opcao === "500" || opcao === "1000" || opcao === "2500") {
+    return Number(opcao);
+  }
+  if (opcao === "custom" && valorCustomEuros) {
+    return Math.round(valorCustomEuros * 100);
+  }
+  return 0;
+}
+
+export function calcularInscricao(
+  data: InscricaoData,
+  referencia = new Date(),
+  descontoPromocional: DescontoPromocional | null = null,
+): CalculoInscricao {
   const participantes = [
     {
       nome: `${data.nome} ${data.apelido}`,
@@ -62,7 +93,9 @@ export function calcularInscricao(data: InscricaoData, referencia = new Date()):
       idade,
       nacionalidade: participante.nacionalidade,
       precoIndividualCentimos: isento ? 0 : calcularPrecoIndividual(participante.nacionalidade, idade),
-      extrasCentimos: calcularExtras(participante.servicos),
+      extrasCentimos: participante.principal && data.estadoVida === "sacerdote"
+        ? 0
+        : calcularExtras(participante.servicos),
     };
   });
 
@@ -76,6 +109,24 @@ export function calcularInscricao(data: InscricaoData, referencia = new Date()):
     ? subtotalCentimos
     : Math.min(subtotalCentimos, limiteFamiliaCentimos);
   const extrasCentimos = participantes.reduce((total, p) => total + p.extrasCentimos, 0);
+  const valorDescontoSeguro = descontoPromocional?.type === "percentage"
+    ? Math.min(100, Math.max(0, Math.trunc(descontoPromocional.value)))
+    : descontoPromocional?.type === "fixed"
+      ? Math.max(0, Math.trunc(descontoPromocional.value))
+      : 0;
+  const descontoPromocionalCentimos = descontoPromocional?.type === "percentage"
+    ? Math.min(baseCentimos, Math.round(baseCentimos * valorDescontoSeguro / 100))
+    : descontoPromocional?.type === "fixed"
+      ? Math.max(0, baseCentimos - Math.min(baseCentimos, valorDescontoSeguro))
+      : 0;
+  const totalSemDonativoCentimos = baseCentimos
+    - descontoPromocionalCentimos
+    + extrasCentimos;
+  const donativoCentimos = calcularDonativo(
+    data.donativo,
+    totalSemDonativoCentimos,
+    data.donativoCustomEuros,
+  );
 
   return {
     participantes,
@@ -83,9 +134,14 @@ export function calcularInscricao(data: InscricaoData, referencia = new Date()):
     limiteFamiliaCentimos,
     descontoFamiliaCentimos: subtotalCentimos - baseCentimos,
     baseCentimos,
+    tipoDescontoPromocional: descontoPromocional?.type ?? null,
+    valorDescontoPromocional: valorDescontoSeguro,
+    descontoPromocionalCentimos,
     extrasCentimos,
-    totalCentimos: baseCentimos + extrasCentimos,
-    rota: data.tipoInscricao === "familia" ? "familias" : "adultos",
+    totalSemDonativoCentimos,
+    donativoCentimos,
+    totalCentimos: totalSemDonativoCentimos + donativoCentimos,
+    rota: data.rota,
   };
 }
 

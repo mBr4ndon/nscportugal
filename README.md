@@ -78,15 +78,28 @@ npm install
 cp .env.example .env.local
 ```
 
-Preenche as variáveis obtidas no Dashboard Stripe e na base PostgreSQL:
+Preenche as ligações obtidas no painel Neon:
 
 ```
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-DATABASE_URL=postgresql://utilizador:password@host:5432/peregrinacao?sslmode=require
+DATABASE_URL=postgresql://...-pooler.../neondb?sslmode=require
+DIRECT_DATABASE_URL=postgresql://.../neondb?sslmode=require
+NEXT_PUBLIC_PAYMENTS_ENABLED=false
 ```
 
-Antes de abrir as inscrições, execute por ordem os ficheiros de `db/migrations/` na base PostgreSQL.
+`DATABASE_URL` deve ser a ligação pooled para a aplicação. `DIRECT_DATABASE_URL`
+deve ser a ligação direta e é utilizada apenas pelas migrações.
+
+Aplica todas as migrações pendentes:
+
+```bash
+npm run db:migrate
+```
+
+Confirma a ligação e o estado da base:
+
+```bash
+npm run db:status
+```
 
 ### 3. Desenvolvimento
 
@@ -103,7 +116,98 @@ npm run build
 npm start
 ```
 
-## Integração Stripe
+## Pagamentos
+
+O formulário e a API de novas inscrições podem ser encerrados com:
+
+```env
+REGISTRATIONS_ENABLED=false
+```
+
+Neste modo, a página mostra a mensagem localizada «Inscrições em breve» e a API
+recusa novas inscrições. Se a variável estiver ausente ou tiver o valor `true`,
+o formulário permanece disponível. Depois de alterar a variável na Vercel, é
+necessário criar um novo deployment.
+
+Os pagamentos estão desativados enquanto:
+
+```env
+NEXT_PUBLIC_PAYMENTS_ENABLED=false
+```
+
+Neste modo, inscrições com valor ficam guardadas como `pending_payment`, com
+método `manual`, e nenhuma cobrança é iniciada. Inscrições totalmente isentas
+ficam confirmadas imediatamente.
+
+### Integração Stripe
+
+Em desenvolvimento, usa apenas chaves de teste:
+
+```env
+NEXT_PUBLIC_PAYMENTS_ENABLED=true
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
+
+Nunca coloques estas chaves no Git. Na Vercel, configura as mesmas variáveis em
+**Project Settings → Environment Variables**, usando chaves `sk_live_...` apenas
+quando o fluxo de teste estiver validado.
+
+### Códigos de desconto
+
+Os códigos podem aplicar uma percentagem ou definir um preço promocional fixo
+para a inscrição, depois do limite familiar. Por exemplo, se o preço base for
+200 € e o código fixo indicar 30 €, a inscrição passa a custar 30 €. Os serviços
+extra de 5 € e os donativos são somados depois e nunca são afetados pelo código.
+
+Depois de aplicar a migração `007_discount_codes.sql`, cria um código na consola
+SQL do Neon:
+
+```sql
+INSERT INTO discount_codes (code, percentage, max_redemptions, valid_until)
+VALUES ('AMIGO25', 25, 10, '2026-10-01T23:59:59+01:00');
+```
+
+Para definir um preço promocional fixo de 30 € (o valor é guardado em cêntimos):
+
+```sql
+INSERT INTO discount_codes (
+  code, discount_type, percentage, fixed_amount_cents, max_redemptions
+)
+VALUES ('PRECO30', 'fixed', NULL, 3000, 10);
+```
+
+Para códigos percentuais, `discount_type` pode ser omitido porque o valor por
+defeito é `percentage`. Para códigos de preço fixo, `percentage` tem de ser `NULL` e
+`fixed_amount_cents` tem de estar entre 1 e 1 000 000 cêntimos.
+
+`max_redemptions` pode ser `NULL` para utilizações ilimitadas. `valid_from` e
+`valid_until` também são opcionais. Os códigos não distinguem maiúsculas de
+minúsculas.
+
+Para criar um código individual de utilização única:
+
+```sql
+INSERT INTO discount_codes (code, percentage, max_redemptions)
+VALUES ('PEREGRINO100', 100, 1);
+```
+
+Mesmo com 100% de desconto, as dormidas e o transporte selecionados continuam a
+ser cobrados. Para desativar um código:
+
+```sql
+UPDATE discount_codes SET active = false, updated_at = now()
+WHERE upper(code) = 'AMIGO25';
+```
+
+### Donativos
+
+No resumo da inscrição, o participante pode optar por não doar, arredondar o
+total ao euro seguinte, acrescentar 5 €, 10 € ou 25 €, ou indicar outro valor
+entre 0,01 € e 10 000 €. O donativo é calculado depois dos descontos e dos
+serviços extra e nunca é reduzido por um código de desconto. O valor fica guardado separadamente em
+`registrations.donation_amount_cents` e aparece como uma linha própria no
+Checkout da Stripe.
 
 ### Fluxo de pagamento
 
@@ -120,6 +224,7 @@ Cria um endpoint para `https://teudominio.pt/api/stripe/webhook` com os eventos:
 
 - `checkout.session.completed`
 - `checkout.session.async_payment_succeeded`
+- `checkout.session.async_payment_failed`
 - `checkout.session.expired`
 
 ### Testar em desenvolvimento
@@ -131,6 +236,28 @@ stripe listen --forward-to localhost:3000/api/stripe/webhook
 ```
 
 Coloca o valor `whsec_...` apresentado pela CLI em `STRIPE_WEBHOOK_SECRET`.
+
+Noutro terminal, inicia a aplicação:
+
+```bash
+npm run dev
+```
+
+Para testar um pagamento aprovado por cartão, usa `4242 4242 4242 4242`, uma
+data futura e qualquer CVC. Testa também o cartão recusado
+`4000 0000 0000 0002` e o fluxo 3D Secure com
+`4000 0000 0000 3220`.
+
+No final de cada cenário, confirma no Neon:
+
+- pagamento aprovado: `payments.status = 'paid'` e
+  `registrations.status = 'confirmed'`;
+- cancelamento ou falha assíncrona: pagamento `failed` e inscrição `cancelled`;
+- sessão expirada: pagamento e inscrição `expired`.
+
+Apple Pay e Google Pay só são apresentados pela Stripe em dispositivos,
+navegadores e wallets compatíveis. O MB WAY deve ser ativado em
+**Stripe Dashboard → Settings → Payment methods**.
 
 ## TODO — Próximos Passos
 

@@ -7,11 +7,19 @@ import { Percurso } from "@/components/sections/Percurso";
 import { Programa } from "@/components/sections/Programa";
 import { Galeria } from "@/components/sections/Galeria";
 import { Inscricao } from "@/components/sections/Inscricao";
+import { InscricoesFechadas } from "@/components/sections/InscricoesFechadas";
 import { Capitulos } from "@/components/sections/Capitulos";
 import { FAQ } from "@/components/sections/FAQ";
 import { Contactos } from "@/components/sections/Contactos";
+import { registrationsEnabled } from "@/lib/features";
 
-export default function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ pagamento?: string }>;
+}) {
+  const { pagamento } = await searchParams;
+
   return (
     <>
       <Header />
@@ -22,7 +30,9 @@ export default function Home() {
         <Percurso />
         <Programa />
         <Galeria />
-        <Inscricao />
+        {registrationsEnabled()
+          ? <Inscricao pagamentoCancelado={pagamento === "cancelado"} />
+          : <InscricoesFechadas />}
         <Capitulos />
         <FAQ />
         <Contactos />

@@ -8,6 +8,8 @@ const PAGES: { path: string; priority: number; changeFreq: MetadataRoute.Sitemap
   { path: "/fatima", priority: 0.8, changeFreq: "monthly" },
   { path: "/nazare", priority: 0.8, changeFreq: "monthly" },
   { path: "/missa",  priority: 0.8, changeFreq: "monthly" },
+  { path: "/regulamento", priority: 0.5, changeFreq: "yearly" },
+  { path: "/politica-privacidade", priority: 0.5, changeFreq: "yearly" },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

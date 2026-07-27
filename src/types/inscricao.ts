@@ -2,6 +2,10 @@ import { z } from "zod";
 
 export const estadoVidaEnum = z.enum(["leigo", "sacerdote", "religioso"]);
 export const tipoInscricaoEnum = z.enum(["individual", "familia"]);
+export const rotaEnum = z.enum(["adultos", "familias"]);
+export const donativoEnum = z.enum(["none", "round_up", "500", "1000", "2500", "custom"]);
+export const DATA_INICIO_PEREGRINACAO = "2026-10-10";
+export const DATA_NASCIMENTO_MAXIMA_RESPONSAVEL = "2010-10-10";
 
 const telefoneSchema = z
   .string()
@@ -35,25 +39,32 @@ export const inscricaoSchema = z
     email: z.string().trim().toLowerCase().email("Correio electrónico inválido"),
     telefone: telefoneSchema,
     nacionalidade: z.string().length(2, "Seleccione uma nacionalidade").transform((v) => v.toUpperCase()),
-    morada: z.string().trim().min(5, "Morada obrigatória").max(250),
-    codigoPostal: z.string().trim().min(3, "Código postal obrigatório").max(20),
-    localidade: z.string().trim().min(2, "Localidade obrigatória").max(100),
-    contactoEmergenciaNome: z.string().trim().min(3, "Nome obrigatório").max(150),
-    contactoEmergenciaTelefone: telefoneSchema,
     estadoVida: estadoVidaEnum,
     tipoInscricao: tipoInscricaoEnum,
-    afiliacaoTipo: z.enum(["diocese", "instituto", "congregacao", "ordem", "outro"]).optional(),
+    rota: rotaEnum,
     afiliacaoNome: z.string().trim().max(200).optional(),
     servicos: servicosSchema,
     membrosFamilia: z.array(membroFamiliaSchema).default([]),
+    codigoDesconto: z.string().trim().max(50).optional().default(""),
+    donativo: donativoEnum.default("none"),
+    donativoCustomEuros: z.preprocess(
+      (value) => value === "" || value === null ? undefined : value,
+      z.coerce.number().positive("Indique um donativo válido").max(10_000).optional(),
+    ),
     aceitaRegulamento: z.literal(true, { errorMap: () => ({ message: "Deve aceitar o regulamento" }) }),
     aceitaRGPD: z.literal(true, { errorMap: () => ({ message: "Deve aceitar a política de privacidade" }) }),
     autorizaImagem: z.boolean().default(false),
     locale: z.string().max(10).default("pt"),
   })
   .superRefine((data, ctx) => {
+    if (data.dataNascimento > DATA_NASCIMENTO_MAXIMA_RESPONSAVEL) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["dataNascimento"],
+        message: "O responsável deve ter pelo menos 16 anos no início da peregrinação",
+      });
+    }
     if (data.estadoVida !== "leigo") {
-      if (!data.afiliacaoTipo) ctx.addIssue({ code: "custom", path: ["afiliacaoTipo"], message: "Seleccione o tipo de instituição" });
       if (!data.afiliacaoNome) ctx.addIssue({ code: "custom", path: ["afiliacaoNome"], message: "Indique a instituição a que pertence" });
       if (data.tipoInscricao !== "individual") ctx.addIssue({ code: "custom", path: ["tipoInscricao"], message: "Sacerdotes e religiosos têm inscrição individual" });
     }
@@ -62,6 +73,13 @@ export const inscricaoSchema = z
     }
     if (data.tipoInscricao === "individual" && data.membrosFamilia.length > 0) {
       ctx.addIssue({ code: "custom", path: ["membrosFamilia"], message: "Uma inscrição individual só pode ter um participante" });
+    }
+    if (data.donativo === "custom" && !data.donativoCustomEuros) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["donativoCustomEuros"],
+        message: "Indique um donativo válido",
+      });
     }
   });
 
