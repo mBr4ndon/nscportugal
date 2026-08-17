@@ -22,6 +22,7 @@ export function Header() {
     { href: p("#testemunhos"), label: t("nav_capitulos") },
     { href: "/nazare", label: t("nav_nazare") },
     { href: "/fatima", label: t("nav_fatima") },
+    { href: p("#informacoes-inscricao"), label: t("nav_precos") },
     { href: p("#faq"), label: t("nav_faq") },
     { href: p("#contactos"), label: t("nav_contactos") },
   ];
@@ -64,7 +65,7 @@ export function Header() {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden lg:flex items-center gap-7">
+        <nav className="hidden xl:flex items-center gap-7">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -85,7 +86,7 @@ export function Header() {
 
         {/* Mobile button */}
         <button
-          className="lg:hidden text-cream-50 p-2"
+          className="xl:hidden text-cream-50 p-2"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Menu"
         >
@@ -95,7 +96,7 @@ export function Header() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="lg:hidden bg-petrol border-t border-white/10">
+        <div className="xl:hidden bg-petrol border-t border-white/10">
           <nav className="container mx-auto px-6 py-6 flex flex-col gap-4">
             {navLinks.map((link) => (
               <Link

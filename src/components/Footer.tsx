@@ -34,6 +34,7 @@ export async function Footer() {
               <li><Link href="/#historia" className="hover:text-gold transition-colors">{t("nav_historia")}</Link></li>
               <li><Link href="/#percurso" className="hover:text-gold transition-colors">{t("nav_percurso")}</Link></li>
               <li><Link href="/#programa" className="hover:text-gold transition-colors">{t("nav_rota")}</Link></li>
+              <li><Link href="/#informacoes-inscricao" className="hover:text-gold transition-colors">{t("nav_precos")}</Link></li>
               <li><Link href="/#inscricao" className="hover:text-gold transition-colors">{t("nav_inscricao")}</Link></li>
             </ul>
           </div>

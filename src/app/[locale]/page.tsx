@@ -6,6 +6,7 @@ import { Historia } from "@/components/sections/Historia";
 import { Percurso } from "@/components/sections/Percurso";
 import { Programa } from "@/components/sections/Programa";
 import { Galeria } from "@/components/sections/Galeria";
+import { InscricaoInformacoes } from "@/components/sections/InscricaoInformacoes";
 import { Inscricao } from "@/components/sections/Inscricao";
 import { InscricoesFechadas } from "@/components/sections/InscricoesFechadas";
 import { Capitulos } from "@/components/sections/Capitulos";
@@ -30,6 +31,7 @@ export default async function Home({
         <Percurso />
         <Programa />
         <Galeria />
+        <InscricaoInformacoes />
         {registrationsEnabled()
           ? <Inscricao pagamentoCancelado={pagamento === "cancelado"} />
           : <InscricoesFechadas />}

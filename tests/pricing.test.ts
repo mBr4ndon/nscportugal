@@ -21,8 +21,17 @@ const membro = (nome: string, nacionalidade = "PT", dataNascimento = "1990-01-01
   servicos: { dormidaNazare: false, dormidaFatima: false, transporteNazare: false },
 });
 
-test("aplica 55 € a português com 25 ou mais anos", () => {
+test("aplica 55 € a português com mais de 25 anos", () => {
   assert.equal(calcularInscricao(inscricao(), referencia).totalCentimos, 5_500);
+});
+
+test("inclui quem tem exatamente 25 anos no escalão jovem", () => {
+  const dataNascimento = "2001-07-22";
+  assert.equal(calcularInscricao(inscricao({ dataNascimento }), referencia).totalCentimos, 4_500);
+  assert.equal(
+    calcularInscricao(inscricao({ dataNascimento, nacionalidade: "ES" }), referencia).totalCentimos,
+    3_500,
+  );
 });
 
 test("limita família portuguesa a 200 € mesmo com membros internacionais", () => {
