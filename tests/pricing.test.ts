@@ -21,16 +21,20 @@ const membro = (nome: string, nacionalidade = "PT", dataNascimento = "1990-01-01
   servicos: { dormidaNazare: false, dormidaFatima: false, transporteNazare: false },
 });
 
-test("aplica 55 € a português com mais de 25 anos", () => {
-  assert.equal(calcularInscricao(inscricao(), referencia).totalCentimos, 5_500);
+test("aplica os preços para maiores de 25 anos", () => {
+  assert.equal(calcularInscricao(inscricao(), referencia).totalCentimos, 7_000);
+  assert.equal(
+    calcularInscricao(inscricao({ nacionalidade: "ES" }), referencia).totalCentimos,
+    6_000,
+  );
 });
 
 test("inclui quem tem exatamente 25 anos no escalão jovem", () => {
   const dataNascimento = "2001-07-22";
-  assert.equal(calcularInscricao(inscricao({ dataNascimento }), referencia).totalCentimos, 4_500);
+  assert.equal(calcularInscricao(inscricao({ dataNascimento }), referencia).totalCentimos, 6_000);
   assert.equal(
     calcularInscricao(inscricao({ dataNascimento, nacionalidade: "ES" }), referencia).totalCentimos,
-    3_500,
+    5_000,
   );
 });
 
@@ -74,8 +78,8 @@ test("código percentual desconta a peregrinação mas não os serviços", () =>
     },
   });
   const result = calcularInscricao(data, referencia, { type: "percentage", value: 100 });
-  assert.equal(result.baseCentimos, 5_500);
-  assert.equal(result.descontoPromocionalCentimos, 5_500);
+  assert.equal(result.baseCentimos, 7_000);
+  assert.equal(result.descontoPromocionalCentimos, 7_000);
   assert.equal(result.extrasCentimos, 1_000);
   assert.equal(result.totalCentimos, 1_000);
 });
@@ -97,9 +101,9 @@ test("donativo por arredondamento completa o próximo euro", () => {
     referencia,
     { type: "percentage", value: 33 },
   );
-  assert.equal(result.totalSemDonativoCentimos, 3_685);
-  assert.equal(result.donativoCentimos, 15);
-  assert.equal(result.totalCentimos, 3_700);
+  assert.equal(result.totalSemDonativoCentimos, 4_690);
+  assert.equal(result.donativoCentimos, 10);
+  assert.equal(result.totalCentimos, 4_700);
 });
 
 test("código de desconto não reduz o donativo", () => {
@@ -108,9 +112,9 @@ test("código de desconto não reduz o donativo", () => {
     referencia,
     { type: "percentage", value: 50 },
   );
-  assert.equal(result.descontoPromocionalCentimos, 2_750);
+  assert.equal(result.descontoPromocionalCentimos, 3_500);
   assert.equal(result.donativoCentimos, 500);
-  assert.equal(result.totalCentimos, 3_250);
+  assert.equal(result.totalCentimos, 4_000);
 });
 
 test("aceita donativo personalizado e converte euros em cêntimos", () => {
@@ -120,7 +124,7 @@ test("aceita donativo personalizado e converte euros em cêntimos", () => {
     { type: "percentage", value: 50 },
   );
   assert.equal(result.donativoCentimos, 1_234);
-  assert.equal(result.totalCentimos, 3_984);
+  assert.equal(result.totalCentimos, 4_734);
 });
 
 test("código de preço fixo define o preço final da componente de inscrição", () => {
@@ -129,8 +133,8 @@ test("código de preço fixo define o preço final da componente de inscrição"
     referencia,
     { type: "fixed", value: 1_000 },
   );
-  assert.equal(result.baseCentimos, 5_500);
-  assert.equal(result.descontoPromocionalCentimos, 4_500);
+  assert.equal(result.baseCentimos, 7_000);
+  assert.equal(result.descontoPromocionalCentimos, 6_000);
   assert.equal(result.totalCentimos, 1_000);
 });
 
@@ -144,7 +148,7 @@ test("código de preço fixo nunca aumenta o preço base", () => {
   );
   assert.equal(result.descontoPromocionalCentimos, 0);
   assert.equal(result.extrasCentimos, 500);
-  assert.equal(result.totalCentimos, 6_000);
+  assert.equal(result.totalCentimos, 7_500);
 });
 
 test("preço fixo é aplicado depois do limite familiar sem afetar extras ou donativo", () => {
