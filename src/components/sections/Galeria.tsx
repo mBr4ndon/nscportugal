@@ -8,7 +8,7 @@ const photos: { src: string; alt: string }[] = [
   { src: "/images/galeria_4.jpg",  alt: "Caminho entre Nazaré e Alcobaça" },
   { src: "/images/galeria_5.jpg",  alt: "Mosteiro de Alcobaça" },
   { src: "/images/galeria_6.jpg",  alt: "Almoço em Alcobaça" },
-  { src: "/images/galeria_7.jpg",  alt: "Caminho para Aljubarrota" },
+  { src: "/images/galeria_7.jpg",  alt: "Caminho para Cumeiras de Cima" },
   { src: "/images/galeria_8.jpg",  alt: "Peregrinos em oração durante a marcha" },
   { src: "/images/galeria_9.jpg",  alt: "Canto gregoriano durante a caminhada" },
   { src: "/images/galeria_10.jpg", alt: "Passagem por Porto de Mós" },

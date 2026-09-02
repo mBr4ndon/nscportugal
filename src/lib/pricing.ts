@@ -46,8 +46,8 @@ export function calcularIdade(dataNascimento: string, referencia = new Date()): 
 
 export function calcularPrecoIndividual(nacionalidade: string, idade: number): number {
   const portugues = nacionalidade.toUpperCase() === "PT";
-  if (portugues) return idade <= 25 ? 4_500 : 5_500;
-  return idade <= 25 ? 3_500 : 4_500;
+  if (portugues) return idade <= 25 ? 6_000 : 7_000;
+  return idade <= 25 ? 5_000 : 6_000;
 }
 
 function calcularExtras(servicos: ServicosData): number {

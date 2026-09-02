@@ -57,17 +57,17 @@ export async function Percurso() {
             {dias.map((dia, dIdx) => (
               <div key={dIdx}>
                 {/* Day header */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
+                <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 items-center gap-3">
                     <span className="font-display text-[10px] tracking-[0.35em] uppercase text-gold">
                       {dia.numero}
                     </span>
                     <span className="w-px h-3 bg-petrol/25" />
-                    <span className="font-display text-[11px] tracking-[0.18em] text-petrol/70 uppercase">
+                    <span className="font-display text-[11px] leading-relaxed tracking-[0.14em] text-petrol/70 uppercase sm:tracking-[0.18em]">
                       {dia.rota}
                     </span>
                   </div>
-                  <span className="font-display text-[10px] tracking-[0.3em] uppercase text-petrol/60">
+                  <span className="self-end font-display text-[10px] tracking-[0.3em] uppercase text-petrol/60 sm:self-auto">
                     {dia.km}
                   </span>
                 </div>

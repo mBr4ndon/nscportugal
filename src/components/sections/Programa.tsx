@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 const WAYPOINT_COORDS = [
   { x: 75,  y: 215, label: "Nazaré",      above: false },
   { x: 248, y: 335, label: "Alcobaça",    above: false },
-  { x: 365, y: 308, label: "Aljubarrota", above: true  },
+  { x: 365, y: 308, label: "Cumeiras de Cima", above: true  },
   { x: 602, y: 258, label: "Porto de Mós", above: false },
   { x: 578, y: 88,  label: "Batalha",     above: true  },
   { x: 918, y: 168, label: "Fátima",      above: false },
@@ -124,7 +124,16 @@ export function Programa() {
                       <circle cx={wp.x} cy={wp.y} r="2" fill="#B08D57" opacity={playing ? "1" : "0"} style={{ transition: playing ? `opacity 0.3s ease ${delay + 0.1}s` : "none" }} />
                     )}
                     <g opacity={playing ? "1" : "0"} style={{ transition: playing ? `opacity 0.4s ease ${delay + 0.15}s` : "none" }}>
-                      <text x={wp.x} y={wp.above ? wp.y - 22 : wp.y + 22} textAnchor="middle" fontSize="11" fontFamily="Cinzel, serif" fontWeight="500" letterSpacing="1.5" fill="#FAF7F2">
+                      <text
+                        x={wp.x}
+                        y={wp.above ? wp.y - 22 : wp.y + 22}
+                        textAnchor="middle"
+                        fontSize={wp.label.length > 12 ? "9" : "11"}
+                        fontFamily="Cinzel, serif"
+                        fontWeight="500"
+                        letterSpacing={wp.label.length > 12 ? "0.8" : "1.5"}
+                        fill="#FAF7F2"
+                      >
                         {wp.label.toUpperCase()}
                       </text>
                       <text x={wp.x} y={wp.above ? wp.y - 10 : wp.y + 34} textAnchor="middle" fontSize="8.5" fontFamily="Cormorant Garamond, serif" fontStyle="italic" fill="#B08D57" letterSpacing="0.5">
@@ -142,9 +151,9 @@ export function Programa() {
             </svg>
           </div>
 
-          <div className="mt-8 grid grid-cols-3 divide-x divide-cream-50/10 border border-cream-50/10">
+          <div className="mt-8 grid grid-cols-1 divide-y divide-cream-50/10 border border-cream-50/10 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
             {legenda.map((d, i) => (
-              <div key={i} className="px-6 py-5 text-center group hover:bg-cream-50/5 transition-colors duration-200">
+              <div key={i} className="px-4 py-5 text-center group hover:bg-cream-50/5 transition-colors duration-200 sm:px-3 lg:px-6">
                 <div className="font-display text-[10px] tracking-[0.3em] uppercase text-gold mb-1">{d.dia}</div>
                 <div className="font-serif text-cream-50/80 text-sm mb-1">{d.rota}</div>
                 <div className="font-display text-[10px] tracking-[0.2em] uppercase text-cream-50/35">{d.km}</div>
